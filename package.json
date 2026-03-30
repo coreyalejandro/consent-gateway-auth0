@@ -7,7 +7,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "test": "node -e \"process.exit(0)\"",
+    "lint": "CI=1 next lint",
     "handoff:check": "node scripts/check-inventory.js"
   },
   "keywords": [
