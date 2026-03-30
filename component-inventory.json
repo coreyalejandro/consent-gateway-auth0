@@ -1,0 +1,32 @@
+{
+  "version": "1",
+  "components": [
+    {
+      "id": "google.calendar.listEvents",
+      "service": "google",
+      "operation": "listEvents",
+      "risk": "LOW",
+      "requiredScopes": ["calendar.read"],
+      "audience": "https://www.googleapis.com/auth/calendar.readonly",
+      "description": "Read calendar events (low risk)."
+    },
+    {
+      "id": "google.calendar.createEvent",
+      "service": "google",
+      "operation": "createEvent",
+      "risk": "MEDIUM",
+      "requiredScopes": ["calendar.write"],
+      "audience": "https://www.googleapis.com/auth/calendar.events",
+      "description": "Create events (medium risk)."
+    },
+    {
+      "id": "google.calendar.deleteAllEvents",
+      "service": "google",
+      "operation": "deleteAllEvents",
+      "risk": "HIGH",
+      "requiredScopes": ["calendar.write"],
+      "audience": "https://www.googleapis.com/auth/calendar",
+      "description": "Destructive bulk delete (high risk; gateway should require step-up)."
+    }
+  ]
+}

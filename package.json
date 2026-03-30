@@ -1,0 +1,44 @@
+{
+  "name": "consent-gateway-auth0",
+  "version": "1.0.0",
+  "description": "7-Stage Action Gateway for AI Agents powered by Auth0 Token Vault",
+  "main": "index.js",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "handoff:check": "node scripts/check-inventory.js"
+  },
+  "keywords": [
+    "auth0",
+    "ai-agents",
+    "governance",
+    "token-vault",
+    "cybersecurity"
+  ],
+  "author": "Corey Alejandro",
+  "license": "MIT",
+  "dependencies": {
+    "@auth0/ai-langchain": "^1.0.0",
+    "@auth0/nextjs-auth0": "^3.5.0",
+    "lucide-react": "^0.400.0",
+    "next": "14.2.25",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "clsx": "^2.1.1",
+    "tailwind-merge": "^2.3.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.12",
+    "@types/react": "^18.3.2",
+    "@types/react-dom": "^18.3.0",
+    "autoprefixer": "^10.4.19",
+    "eslint": "^8.57.0",
+    "eslint-config-next": "14.2.25",
+    "postcss": "^8.4.38",
+    "tailwindcss": "^3.4.3",
+    "typescript": "^5.4.5"
+  }
+}

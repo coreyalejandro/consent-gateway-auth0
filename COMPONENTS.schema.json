@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://consent-gateway.local/schemas/component-inventory.schema.json",
+  "title": "Consent Gateway component inventory",
+  "type": "object",
+  "required": ["version", "components"],
+  "properties": {
+    "version": { "type": "string" },
+    "components": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/component" }
+    }
+  },
+  "$defs": {
+    "component": {
+      "type": "object",
+      "required": [
+        "id",
+        "service",
+        "operation",
+        "risk",
+        "requiredScopes",
+        "audience"
+      ],
+      "properties": {
+        "id": { "type": "string", "description": "Stable tool / action id" },
+        "service": { "type": "string" },
+        "operation": { "type": "string" },
+        "risk": { "type": "string", "enum": ["LOW", "MEDIUM", "HIGH"] },
+        "requiredScopes": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "audience": {
+          "type": "string",
+          "description": "Resource server identifier for Auth0 / Token Vault"
+        },
+        "description": { "type": "string" }
+      },
+      "additionalProperties": true
+    }
+  }
+}
