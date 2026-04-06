@@ -7,19 +7,33 @@ import { GatewayDemo } from "@/components/gateway/GatewayDemo";
 export function GatewayShell() {
   return (
     <ConsentProvider>
-      <main className="mx-auto flex max-w-2xl flex-col gap-8 px-6 py-16">
-        <header className="space-y-2">
-          <p className="text-sm uppercase tracking-wide text-zinc-500">Consent Gateway</p>
-          <h1 className="text-3xl font-semibold text-white">Authorized to Act</h1>
-          <p className="text-zinc-400">
-            Intercept → evaluate policy + inventory → prompt → Auth0 Token Vault. Sign in with{" "}
-            <Link className="text-emerald-400 underline" href="/api/auth/login">
-              Auth0
-            </Link>
-            , then approve a sample tool request.
+      <main className="mx-auto flex max-w-3xl flex-col gap-8 px-6 py-12">
+        <header className="space-y-3">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-900/60 border border-emerald-700/40">
+              <span className="text-lg">🛡</span>
+            </div>
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-emerald-500">
+                Consent Gateway
+              </p>
+              <h1 className="text-2xl font-bold text-white">Authorized to Act</h1>
+            </div>
+          </div>
+          <p className="text-sm text-zinc-400 max-w-xl leading-relaxed">
+            A governance layer for AI agents. Every tool call is intercepted, evaluated against policy
+            and a component inventory, then authorized via{" "}
+            <strong className="text-emerald-400">Auth0 Token Vault</strong> — only after explicit user consent.{" "}
+            <Link className="text-sky-400 underline hover:text-sky-300" href="/api/auth/login">
+              Sign in with Auth0
+            </Link>{" "}
+            to try the full flow.
           </p>
         </header>
         <GatewayDemo />
+        <footer className="border-t border-zinc-800/50 pt-4 text-[11px] text-zinc-600">
+          Built for the Auth0 AI Agent Hackathon · Token Vault + Consent Gateway Pattern
+        </footer>
       </main>
     </ConsentProvider>
   );
