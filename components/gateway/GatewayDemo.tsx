@@ -4,6 +4,7 @@ import { useConsentContext } from "@/contexts/ConsentContext";
 import { GatewayPipeline } from "@/components/gateway/GatewayPipeline";
 import { ConsentLog } from "@/components/gateway/ConsentLog";
 import { ScopeDisplay } from "@/components/gateway/ScopeDisplay";
+import { InventoryManifest } from "@/components/gateway/InventoryManifest";
 
 const ACTIONS = [
   {
@@ -196,6 +197,9 @@ export function GatewayDemo() {
           Reset gateway
         </button>
       )}
+
+      {/* Permission Manifest */}
+      <InventoryManifest />
 
       {/* Audit Log */}
       <ConsentLog entries={auditLog} />

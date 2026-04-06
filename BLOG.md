@@ -29,6 +29,10 @@ The token is scoped to exactly what the user consented to — nothing more. It's
 
 This separation is crucial. The agent framework doesn't need to know how tokens are stored or refreshed. The consent gateway doesn't need to implement a credential store. Token Vault handles the plumbing, and the gateway handles the policy.
 
+## Token Vault as Prompt Injection Defense
+
+There's a security angle that's easy to miss: Token Vault is also a **prompt injection defense**. When an agent holds API keys or long-lived tokens in its context, a prompt injection attack can exfiltrate those credentials — the agent is tricked into sending them to an attacker-controlled endpoint. With Token Vault, the agent never possesses credentials. The token is retrieved server-side by the gateway, used for a single scoped API call, and never exposed to the LLM context. Even if the agent is compromised by a malicious prompt, there are no credentials to steal. The attacker would need to compromise both the Auth0 session and pass the consent gateway's policy engine — a dramatically higher bar.
+
 ## The Step-Up Gap in Agent Authorization
 
 Here's the insight that surprised me while building this: **no major agent framework implements risk-tiered authorization**. LangChain, CrewAI, AutoGen — they all treat every tool call the same way. A read operation and a destructive bulk delete go through the same (or no) authorization flow.
