@@ -24,7 +24,7 @@ const REQUIRED_SCOPES: Record<string, string[]> = {
   deleteAllEvents: ["calendar.write"],
 };
 
-export function evaluatePolicy(input: PolicyInput): PolicyDecision {
+export function evaluatePolicy(input: PolicyInput & { stepUpVerified?: boolean }): PolicyDecision {
   const allowedOps = OPERATION_ALLOWLIST[input.service];
   if (!allowedOps || !allowedOps.has(input.operation)) {
     return { allowed: false, risk: "HIGH", reason: "operation not allowed" };
@@ -37,7 +37,7 @@ export function evaluatePolicy(input: PolicyInput): PolicyDecision {
     return { allowed: false, risk, reason: `missing scopes: ${missing.join(", ")}` };
   }
 
-  if (risk === "HIGH") {
+  if (risk === "HIGH" && !input.stepUpVerified) {
     return { allowed: false, risk, reason: "high risk operation requires step-up", stepUpRequired: true };
   }
 
