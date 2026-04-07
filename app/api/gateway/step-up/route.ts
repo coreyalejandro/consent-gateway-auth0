@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSession, withApiAuthRequired } from "@auth0/nextjs-auth0";
+import { auth0 } from "@/lib/auth0";
 
 /**
  * Step-up authentication endpoint.
@@ -19,10 +19,8 @@ import { getSession, withApiAuthRequired } from "@auth0/nextjs-auth0";
 
 const STEP_UP_MAX_AGE_S = 120; // must have logged in within last 2 minutes
 
-export const POST = withApiAuthRequired(async function stepUp(req: NextRequest) {
-  const res = new NextResponse();
-
-  const session = await getSession(req, res);
+export async function POST(_req: NextRequest) {
+  const session = await auth0.getSession();
   if (!session?.user) {
     return NextResponse.json({ error: "no_session" }, { status: 401 });
   }
@@ -32,17 +30,14 @@ export const POST = withApiAuthRequired(async function stepUp(req: NextRequest) 
   const now = Math.floor(Date.now() / 1000);
 
   if (authTime && now - authTime <= STEP_UP_MAX_AGE_S) {
-    return NextResponse.json(
-      { verified: true, verifiedAt: new Date().toISOString() },
-      { status: 200, headers: res.headers },
-    );
+    return NextResponse.json({ verified: true, verifiedAt: new Date().toISOString() }, { status: 200 });
   }
 
-  // Session is stale — client must redirect to Auth0 with prompt=login
-  const loginUrl = `/api/auth/login?returnTo=${encodeURIComponent("/")}&authorizationParams=${encodeURIComponent(JSON.stringify({ prompt: "login", max_age: 0 }))}`;
+  // Session is stale — client must redirect to Auth0 with re-login (v4: /auth/login)
+  const loginUrl = `/auth/login?returnTo=${encodeURIComponent("/")}&prompt=login`;
 
   return NextResponse.json(
     { verified: false, reason: "session_stale", loginUrl },
-    { status: 200, headers: res.headers },
+    { status: 200 },
   );
-});
+}

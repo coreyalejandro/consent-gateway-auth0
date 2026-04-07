@@ -14,13 +14,34 @@ import { fileURLToPath } from "url";
 
 const ROOT = process.cwd();
 const REQUIRED_FOR_GATEWAY = [
-  "AUTH0_ISSUER_BASE_URL",
   "AUTH0_SUBJECT_TOKEN_AUDIENCE",
   "AUTH0_TOKEN_VAULT_CLIENT_ID",
   "AUTH0_TOKEN_VAULT_CLIENT_SECRET",
 ];
 
-const REQUIRED_FOR_LOGIN = ["AUTH0_SECRET", "AUTH0_BASE_URL", "AUTH0_CLIENT_ID", "AUTH0_CLIENT_SECRET"];
+/** v4: APP_BASE_URL; legacy projects may still use AUTH0_BASE_URL */
+const REQUIRED_FOR_LOGIN = ["AUTH0_SECRET", "AUTH0_CLIENT_ID", "AUTH0_CLIENT_SECRET"];
+
+/** @param {Record<string, string | undefined>} env */
+function hasIssuer(env) {
+  const d = env.AUTH0_DOMAIN?.trim();
+  const i = env.AUTH0_ISSUER_BASE_URL?.trim();
+  return Boolean(d || i);
+}
+
+/** @param {Record<string, string | undefined>} env */
+function issuerUrlFromEnv(env) {
+  const explicit = env.AUTH0_ISSUER_BASE_URL?.trim();
+  if (explicit) return normalizeIssuerBaseUrl(explicit);
+  const domain = env.AUTH0_DOMAIN?.replace(/^https?:\/\//, "").replace(/\/$/, "").trim();
+  if (domain) return `https://${domain}`;
+  return "";
+}
+
+/** @param {Record<string, string | undefined>} env */
+function hasAppBaseUrl(env) {
+  return Boolean(env.APP_BASE_URL?.trim() || env.AUTH0_BASE_URL?.trim());
+}
 
 /** @param {string} raw */
 export function normalizeIssuerBaseUrl(raw) {
@@ -152,13 +173,24 @@ async function main() {
     process.exit(1);
   }
 
+  if (!hasIssuer(env)) {
+    console.error("FAIL: set AUTH0_DOMAIN (v4) or AUTH0_ISSUER_BASE_URL (legacy full issuer URL).");
+    process.exit(1);
+  }
+
   if (missLogin.length) {
     console.warn("WARN: missing or empty login/session variables (app login may not work):");
     for (const k of missLogin) console.warn(`  - ${k}`);
     console.warn("");
   }
 
-  const issuer = normalizeIssuerBaseUrl(env.AUTH0_ISSUER_BASE_URL ?? "");
+  if (!hasAppBaseUrl(env)) {
+    console.warn(
+      "WARN: APP_BASE_URL (v4) or AUTH0_BASE_URL not set — Auth0 SDK may infer origin; set APP_BASE_URL=http://localhost:3000 for local dev.\n",
+    );
+  }
+
+  const issuer = issuerUrlFromEnv(env);
   console.log(`Issuer (normalized): ${issuer}`);
   console.log(`Subject token audience: ${env.AUTH0_SUBJECT_TOKEN_AUDIENCE}`);
   console.log(`Token exchange client ID: ${env.AUTH0_TOKEN_VAULT_CLIENT_ID?.slice(0, 8)}…`);
@@ -181,10 +213,10 @@ async function main() {
     process.exit(0);
   }
 
-  const meta = await fetchIssuerMetadata(env.AUTH0_ISSUER_BASE_URL ?? "");
+  const meta = await fetchIssuerMetadata(issuer);
   if (!meta.ok) {
     console.error(`\nFAIL: issuer metadata: ${meta.error}`);
-    console.error("Fix AUTH0_ISSUER_BASE_URL or use --offline if you have no network.");
+    console.error("Fix AUTH0_DOMAIN / AUTH0_ISSUER_BASE_URL or use --offline if you have no network.");
     process.exit(1);
   }
   console.log(`\nIssuer metadata OK — token endpoint: ${meta.tokenEndpoint}`);

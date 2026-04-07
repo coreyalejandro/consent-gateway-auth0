@@ -10,7 +10,7 @@ Built for the **Auth0 AI Agent Hackathon**.
 
 AI agents can call tools (APIs, services) on behalf of users. Consent Gateway inserts an 8-stage authorization pipeline between the agent's intent and execution:
 
-```
+```text
 Agent Tool Call
       │
       ▼
@@ -45,7 +45,7 @@ Agent Tool Call
 ## Token Semantics (Truthful)
 
 | Piece | Role |
-|--------|------|
+| --- | --- |
 | **Auth0 session / subject token** | User access token for `AUTH0_SUBJECT_TOKEN_AUDIENCE` — input to token exchange |
 | **Provider access token** | Result of token exchange with `connection` + `audience` — **never returned to the browser** in this app; only metadata is shown |
 | **Consent boundary** | User approval happens before the exchange runs |
@@ -70,15 +70,16 @@ cp .env.example .env.local
 ```
 
 | Variable | Description |
-|----------|-------------|
-| `AUTH0_SECRET` | Session cookie encryption secret |
-| `AUTH0_BASE_URL` | App origin, e.g. `http://localhost:3000` |
-| `AUTH0_ISSUER_BASE_URL` | `https://YOUR_TENANT.auth0.com` |
+| --- | --- |
+| `APP_BASE_URL` | App origin (Auth0 SDK v4), e.g. `http://localhost:3000` |
+| `AUTH0_DOMAIN` | Tenant hostname **without** `https://`, e.g. `dev-xxx.us.auth0.com` |
+| `AUTH0_SECRET` | Session cookie encryption secret (64+ hex chars recommended) |
 | `AUTH0_CLIENT_ID` | Regular web app client ID |
 | `AUTH0_CLIENT_SECRET` | Regular web app client secret |
-| `AUTH0_SUBJECT_TOKEN_AUDIENCE` | **Required.** Identifier of the Auth0 API used to mint the **subject** access token for exchange |
+| `AUTH0_SUBJECT_TOKEN_AUDIENCE` | **Required.** Auth0 API identifier for the **subject** access token used in token exchange |
 | `AUTH0_TOKEN_VAULT_CLIENT_ID` | **Required.** Client ID for token exchange |
 | `AUTH0_TOKEN_VAULT_CLIENT_SECRET` | **Required.** Client secret for token exchange |
+| `AUTH0_ISSUER_BASE_URL` | *(Optional)* Full issuer URL; if omitted, derived as `https://${AUTH0_DOMAIN}` for vault + verify scripts |
 
 ### Install & Run
 
@@ -91,9 +92,9 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ### Auth0 Configuration (high level)
 
-1. Create a **Regular Web Application**; set callback and logout URLs.
-2. Create an **Auth0 API**; set its identifier to `AUTH0_SUBJECT_TOKEN_AUDIENCE` and enable it for the SPA / web app.
-3. Configure a **confidential client** (or enable token exchange on an M2M app) per Auth0 docs for your tenant, and grant token exchange from the subject token to the resource audience (e.g. Google APIs).
+1. Create a **Regular Web Application**; set **Allowed Callback URLs** to `http://localhost:3000/auth/callback` and **Allowed Logout URLs** to `http://localhost:3000/` (Auth0 Next.js SDK **v4** mounts routes under `/auth/*`, not `/api/auth/*`).
+2. Create an **Auth0 API**; set its identifier to `AUTH0_SUBJECT_TOKEN_AUDIENCE` and authorize the web app to request it.
+3. Configure a **confidential client** for token exchange (`AUTH0_TOKEN_VAULT_*`) per Auth0 docs.
 4. Align **connection** names in `component-inventory.json` with your Auth0 connections (e.g. `google-oauth2`).
 
 ### Verify tenant + env (automated)
@@ -116,10 +117,11 @@ npm run verify:auth0:offline
 
 ## Project Structure
 
-```
+```text
+middleware.ts              — Auth0 v4: `auth0.middleware()` (mounts `/auth/login`, `/auth/callback`, …)
+lib/auth0.ts                 — `Auth0Client` singleton
 app/
   api/
-    auth/[auth0]/route.ts    — Auth0 login/logout/callback
     gateway/
       token/route.ts         — Subject token + RFC 8693 exchange; metadata-only response
       step-up/route.ts       — Step-up auth verification (auth_time)

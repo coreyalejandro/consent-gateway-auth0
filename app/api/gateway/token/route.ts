@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAccessToken, withApiAuthRequired } from "@auth0/nextjs-auth0";
+import { auth0 } from "@/lib/auth0";
 import {
   exchangeConnectionScopedAccessToken,
   gatewayTokenRequestSchema,
@@ -10,7 +10,12 @@ import {
  * session → subject token (Auth0) → token exchange (connection + audience) → metadata only.
  * Raw provider tokens are never returned to the client.
  */
-export const POST = withApiAuthRequired(async function gatewayToken(req: NextRequest) {
+export async function POST(req: NextRequest) {
+  const session = await auth0.getSession();
+  if (!session?.user) {
+    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  }
+
   let json: unknown;
   try {
     json = await req.json();
@@ -38,12 +43,10 @@ export const POST = withApiAuthRequired(async function gatewayToken(req: NextReq
 
   let subjectToken: string | undefined;
   try {
-    const tokenResult = await getAccessToken(req, res, {
-      authorizationParams: {
-        audience: subjectAudience,
-      },
+    const tokenResult = await auth0.getAccessToken(req, res, {
+      audience: subjectAudience,
     });
-    subjectToken = tokenResult.accessToken ?? undefined;
+    subjectToken = tokenResult.token ?? undefined;
   } catch {
     return NextResponse.json({ error: "subject_token_unavailable" }, { status: 401 });
   }
@@ -67,8 +70,6 @@ export const POST = withApiAuthRequired(async function gatewayToken(req: NextReq
     );
   }
 
-  // exchange.accessToken is intentionally not returned to the client.
-
   const issuedAt = new Date().toISOString();
   const metaScopes = scopes?.length ? scopes : [];
 
@@ -87,4 +88,4 @@ export const POST = withApiAuthRequired(async function gatewayToken(req: NextReq
     },
     { status: 200, headers: res.headers },
   );
-});
+}

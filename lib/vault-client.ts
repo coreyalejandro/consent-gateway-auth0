@@ -19,13 +19,21 @@ export type VaultEnv = {
   vaultClientSecret: string;
 };
 
+function issuerBaseUrlFromEnv(): string {
+  const explicit = process.env.AUTH0_ISSUER_BASE_URL?.replace(/\/$/, "").trim();
+  if (explicit) return explicit;
+  const domain = process.env.AUTH0_DOMAIN?.replace(/^https?:\/\//, "").replace(/\/$/, "").trim();
+  if (domain) return `https://${domain}`;
+  return "";
+}
+
 export function loadVaultEnv(): VaultEnv {
-  const issuerBaseUrl = process.env.AUTH0_ISSUER_BASE_URL?.replace(/\/$/, "") ?? "";
+  const issuerBaseUrl = issuerBaseUrlFromEnv();
   const vaultClientId = process.env.AUTH0_TOKEN_VAULT_CLIENT_ID ?? "";
   const vaultClientSecret = process.env.AUTH0_TOKEN_VAULT_CLIENT_SECRET ?? "";
   if (!issuerBaseUrl || !vaultClientId || !vaultClientSecret) {
     throw new Error(
-      "vault_env_incomplete: set AUTH0_ISSUER_BASE_URL, AUTH0_TOKEN_VAULT_CLIENT_ID, AUTH0_TOKEN_VAULT_CLIENT_SECRET",
+      "vault_env_incomplete: set AUTH0_DOMAIN (or AUTH0_ISSUER_BASE_URL), AUTH0_TOKEN_VAULT_CLIENT_ID, AUTH0_TOKEN_VAULT_CLIENT_SECRET",
     );
   }
   return { issuerBaseUrl, vaultClientId, vaultClientSecret };

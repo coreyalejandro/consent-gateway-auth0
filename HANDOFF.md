@@ -1,9 +1,12 @@
 # Agent Handoff: consent-gateway-auth0
 
 **Date:** 2026-04-06  
-**Status:** C-RSP token path + tenant verification tooling
+**Status:** Auth0 v4 + gateway UI; error boundaries for client failures
 
 ## What Was Just Completed
+
+- **Blank screen mitigation:** Added `app/error.tsx` and `app/global-error.tsx` so uncaught client/React errors render a visible recovery UI (with `error.message` in development) instead of a silent blank page.
+- **Diagnostics (local):** `GET /` returns 200 with full HTML. `GET /auth/login` may return **500** plain text if Auth0 login initiation fails (tenant/network/credentials). Mis-hit `/auth/callback` returns **500** “The state parameter is missing.” — use the real OAuth redirect from Auth0.
 
 - Added `scripts/verify-auth0-env.mjs` + `npm run verify:auth0` / `verify:auth0:offline` (env, inventory connections, issuer `/.well-known/openid-configuration`). Vitest tests for exported helpers (`__tests__/verify-auth0-env.test.ts`). CLI guarded so imports do not run `main()`.
 - README + HANDOFF updated with verification steps; `consentchain-demo-video-script.md` aligned with connection-scoped / subject-token semantics.
@@ -32,6 +35,7 @@
 
 ## Known Issues / Considerations
 
+- If **Sign in** or `/auth/login` shows an error or blank behavior: confirm `AUTH0_DOMAIN` (or `AUTH0_ISSUER_BASE_URL`), `AUTH0_CLIENT_ID`, `AUTH0_CLIENT_SECRET`, `AUTH0_SECRET`, `APP_BASE_URL` (or `AUTH0_BASE_URL`), Dashboard callback `http://localhost:3000/auth/callback`, and that the machine can reach Auth0 (`npm run verify:auth0`).
 - Unit tests mock token exchange HTTP; **local verification** uses `scripts/verify-auth0-env.mjs` for issuer + env + inventory.
 - A **502** from `/api/gateway/token` means Auth0 rejected the exchange — check tenant logs and exchange grant configuration.
 

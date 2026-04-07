@@ -25,7 +25,7 @@ export function GatewayShell() {
             and a component inventory, then authorized via{" "}
             <strong className="text-emerald-400">Auth0</strong> — session, connection binding, and consent before any
             connection-scoped token is issued.{" "}
-            <Link className="text-sky-400 underline hover:text-sky-300" href="/api/auth/login">
+            <Link className="text-sky-400 underline hover:text-sky-300" href="/auth/login">
               Sign in with Auth0
             </Link>{" "}
             to try the full flow.

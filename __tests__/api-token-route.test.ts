@@ -4,18 +4,16 @@ import { gatewayTokenRequestSchema as gatewayTokenBodySchema } from "@/lib/vault
 
 const mocks = vi.hoisted(() => ({
   mockGetAccessToken: vi.fn(),
+  mockGetSession: vi.fn(),
   mockExchange: vi.fn(),
 }));
 
-vi.mock("@auth0/nextjs-auth0", async () => {
-  const actual = await vi.importActual<typeof import("@auth0/nextjs-auth0")>("@auth0/nextjs-auth0");
-  return {
-    ...actual,
-    withApiAuthRequired: (fn: (req: NextRequest, ctx: { params?: Record<string, string | string[]> }) => Promise<Response>) =>
-      fn,
+vi.mock("@/lib/auth0", () => ({
+  auth0: {
+    getSession: () => mocks.mockGetSession(),
     getAccessToken: (...args: unknown[]) => mocks.mockGetAccessToken(...args),
-  };
-});
+  },
+}));
 
 vi.mock("@/lib/vault-client", async () => {
   const actual = await vi.importActual<typeof import("@/lib/vault-client")>("@/lib/vault-client");
@@ -85,7 +83,11 @@ describe("/api/gateway/token request validation", () => {
 describe("POST /api/gateway/token handler (mocked Auth0 + exchange)", () => {
   beforeEach(() => {
     process.env.AUTH0_SUBJECT_TOKEN_AUDIENCE = "https://subject.api.test/";
-    mocks.mockGetAccessToken.mockResolvedValue({ accessToken: "subject_jwt" });
+    mocks.mockGetSession.mockResolvedValue({ user: { sub: "user-1" } });
+    mocks.mockGetAccessToken.mockResolvedValue({
+      token: "subject_jwt",
+      expiresAt: Math.floor(Date.now() / 1000) + 3600,
+    });
     mocks.mockExchange.mockResolvedValue({
       ok: true,
       accessToken: "provider_secret",
@@ -95,6 +97,7 @@ describe("POST /api/gateway/token handler (mocked Auth0 + exchange)", () => {
 
   afterEach(() => {
     mocks.mockGetAccessToken.mockReset();
+    mocks.mockGetSession.mockReset();
     mocks.mockExchange.mockReset();
     vi.clearAllMocks();
     delete process.env.AUTH0_SUBJECT_TOKEN_AUDIENCE;
@@ -110,7 +113,7 @@ describe("POST /api/gateway/token handler (mocked Auth0 + exchange)", () => {
         scopes: ["calendar.read"],
       }),
     });
-    const res = await POST(req, { params: {} });
+    const res = await POST(req);
     expect(res.status).toBe(200);
     const json = (await res.json()) as Record<string, unknown>;
     expect(json.ok).toBe(true);
@@ -136,7 +139,7 @@ describe("POST /api/gateway/token handler (mocked Auth0 + exchange)", () => {
         scopes: [],
       }),
     });
-    const res = await POST(req, { params: {} });
+    const res = await POST(req);
     expect(res.status).toBe(502);
     const json = (await res.json()) as { error?: string };
     expect(json.error).toBe("token_exchange_failed");
@@ -152,12 +155,15 @@ describe("POST /api/gateway/token handler (mocked Auth0 + exchange)", () => {
         audience: "https://a",
       }),
     });
-    const res = await POST(req, { params: {} });
+    const res = await POST(req);
     expect(res.status).toBe(500);
   });
 
   it("returns 401 when subject token unavailable", async () => {
-    mocks.mockGetAccessToken.mockResolvedValue({ accessToken: undefined });
+    mocks.mockGetAccessToken.mockResolvedValue({
+      token: "",
+      expiresAt: 0,
+    });
     const { POST } = await import("@/app/api/gateway/token/route");
     const req = new NextRequest("http://localhost/api/gateway/token", {
       method: "POST",
@@ -166,7 +172,21 @@ describe("POST /api/gateway/token handler (mocked Auth0 + exchange)", () => {
         audience: "https://a",
       }),
     });
-    const res = await POST(req, { params: {} });
+    const res = await POST(req);
+    expect(res.status).toBe(401);
+  });
+
+  it("returns 401 when there is no session", async () => {
+    mocks.mockGetSession.mockResolvedValue(null);
+    const { POST } = await import("@/app/api/gateway/token/route");
+    const req = new NextRequest("http://localhost/api/gateway/token", {
+      method: "POST",
+      body: JSON.stringify({
+        connection: "c",
+        audience: "https://a",
+      }),
+    });
+    const res = await POST(req);
     expect(res.status).toBe(401);
   });
 });
@@ -184,9 +204,9 @@ describe("/api/gateway/step-up route structure", () => {
     expect(typeof mod.POST).toBe("function");
   });
 
-  it("auth route module exports GET and POST handlers", async () => {
-    const mod = await import("@/app/api/auth/[auth0]/route");
-    expect(mod.GET).toBeDefined();
-    expect(mod.POST).toBeDefined();
+  it("root middleware exports handler (Auth0 v4)", async () => {
+    const mod = await import("@/middleware");
+    expect(mod.middleware).toBeDefined();
+    expect(typeof mod.middleware).toBe("function");
   });
 });
