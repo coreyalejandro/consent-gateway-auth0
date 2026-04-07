@@ -8,7 +8,7 @@ const STAGES: { key: GatewayStage; label: string; icon: string }[] = [
   { key: "risk_check", label: "Risk", icon: "⚠" },
   { key: "step_up", label: "Step-Up", icon: "🔐" },
   { key: "consent_prompt", label: "Consent", icon: "👤" },
-  { key: "token_vault", label: "Token Vault", icon: "🔑" },
+  { key: "token_vault", label: "Issuance", icon: "🔑" },
   { key: "execute", label: "Execute", icon: "⚡" },
   { key: "audit_log", label: "Audit", icon: "📝" },
 ];

@@ -8,6 +8,7 @@
       "risk": "LOW",
       "requiredScopes": ["calendar.read"],
       "audience": "https://www.googleapis.com/auth/calendar.readonly",
+      "connection": "google-oauth2",
       "description": "Read calendar events (low risk)."
     },
     {
@@ -17,6 +18,7 @@
       "risk": "MEDIUM",
       "requiredScopes": ["calendar.write"],
       "audience": "https://www.googleapis.com/auth/calendar.events",
+      "connection": "google-oauth2",
       "description": "Create events (medium risk)."
     },
     {
@@ -26,6 +28,7 @@
       "risk": "HIGH",
       "requiredScopes": ["calendar.write"],
       "audience": "https://www.googleapis.com/auth/calendar",
+      "connection": "google-oauth2",
       "description": "Destructive bulk delete (high risk; gateway should require step-up)."
     }
   ]

@@ -20,8 +20,10 @@
         "operation",
         "risk",
         "requiredScopes",
-        "audience"
+        "audience",
+        "connection"
       ],
+      "additionalProperties": false,
       "properties": {
         "id": { "type": "string", "description": "Stable tool / action id" },
         "service": { "type": "string" },
@@ -29,15 +31,20 @@
         "risk": { "type": "string", "enum": ["LOW", "MEDIUM", "HIGH"] },
         "requiredScopes": {
           "type": "array",
-          "items": { "type": "string" }
+          "items": { "type": "string" },
+          "minItems": 1
         },
         "audience": {
           "type": "string",
-          "description": "Resource server identifier for Auth0 / Token Vault"
+          "description": "Resource server / API audience for the provider access token"
+        },
+        "connection": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Auth0 authentication connection name (e.g. google-oauth2)"
         },
         "description": { "type": "string" }
-      },
-      "additionalProperties": true
+      }
     }
   }
 }

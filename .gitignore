@@ -4,6 +4,8 @@ node_modules
 .next
 .DS_Store
 tsconfig.tsbuildinfo
+output/
+public/components-schema.json
 
 # OpenMemory - IDE/Assistant specific rules
 .cursor/rules/openmemory.mdc

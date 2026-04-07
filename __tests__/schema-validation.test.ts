@@ -90,4 +90,14 @@ describe("COMPONENTS.schema.json validation", () => {
       expect(comp.requiredScopes.length).toBeGreaterThan(0);
     }
   });
+
+  it("every component declares a non-empty connection", () => {
+    const raw = fs.readFileSync(inventoryPath, "utf-8");
+    inventory = JSON.parse(raw);
+    const components = (inventory as { components: { connection: string }[] }).components;
+    for (const comp of components) {
+      expect(typeof comp.connection).toBe("string");
+      expect(comp.connection.length).toBeGreaterThan(0);
+    }
+  });
 });

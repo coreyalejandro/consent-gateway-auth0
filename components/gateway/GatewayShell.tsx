@@ -23,7 +23,8 @@ export function GatewayShell() {
           <p className="text-sm text-zinc-400 max-w-xl leading-relaxed">
             A governance layer for AI agents. Every tool call is intercepted, evaluated against policy
             and a component inventory, then authorized via{" "}
-            <strong className="text-emerald-400">Auth0 Token Vault</strong> — only after explicit user consent.{" "}
+            <strong className="text-emerald-400">Auth0</strong> — session, connection binding, and consent before any
+            connection-scoped token is issued.{" "}
             <Link className="text-sky-400 underline hover:text-sky-300" href="/api/auth/login">
               Sign in with Auth0
             </Link>{" "}
@@ -32,7 +33,7 @@ export function GatewayShell() {
         </header>
         <GatewayDemo />
         <footer className="border-t border-zinc-800/50 pt-4 text-[11px] text-zinc-600">
-          Built for the Auth0 AI Agent Hackathon · Token Vault + Consent Gateway Pattern
+          Built for the Auth0 AI Agent Hackathon · Consent Gateway + connection-scoped token issuance
         </footer>
       </main>
     </ConsentProvider>

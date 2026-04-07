@@ -1,7 +1,7 @@
 {
   "name": "consent-gateway-auth0",
   "version": "1.0.0",
-  "description": "7-Stage Action Gateway for AI Agents powered by Auth0 Token Vault",
+  "description": "7-stage consent gateway for AI agents — policy, step-up, connection-scoped token issuance (Auth0)",
   "main": "index.js",
   "scripts": {
     "dev": "next dev",
@@ -10,7 +10,14 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "lint": "CI=1 next lint",
-    "handoff:check": "node scripts/check-inventory.js"
+    "handoff:check": "node scripts/check-inventory.js",
+    "verify:auth0": "node scripts/verify-auth0-env.mjs",
+    "verify:auth0:offline": "node scripts/verify-auth0-env.mjs --offline",
+    "video:install": "npx playwright install chromium",
+    "video:record": "node scripts/video/record.mjs",
+    "video:audio": "node scripts/video/generate-audio.mjs",
+    "video:merge": "node scripts/video/merge.mjs",
+    "video:build": "node scripts/video/build.mjs"
   },
   "keywords": [
     "auth0",
@@ -42,10 +49,13 @@
     "autoprefixer": "^10.4.19",
     "eslint": "^8.57.0",
     "eslint-config-next": "14.2.25",
+    "ffmpeg-static": "^5.3.0",
     "jsdom": "^29.0.1",
+    "playwright": "^1.59.1",
     "postcss": "^8.4.38",
     "tailwindcss": "^3.4.3",
     "typescript": "^5.4.5",
-    "vitest": "^4.1.2"
+    "vitest": "^4.1.2",
+    "wait-on": "^9.0.4"
   }
 }

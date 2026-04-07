@@ -8,6 +8,8 @@ export type InventoryComponent = {
   risk: "LOW" | "MEDIUM" | "HIGH";
   requiredScopes: string[];
   audience: string;
+  /** Auth0 connection name bound to this tool (token exchange). */
+  connection: string;
   description?: string;
 };
 

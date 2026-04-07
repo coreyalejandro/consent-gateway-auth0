@@ -43,10 +43,12 @@ export type AuditEntry = {
 };
 
 export type TokenMeta = {
+  connection: string;
   audience: string;
   scopes: string[];
   issuedAt: string;
-  /** Access token is NOT stored — only metadata */
+  expiresIn?: number;
+  /** Raw access tokens are not stored client-side — metadata only. */
 };
 
 export type ConsentState =
@@ -206,7 +208,7 @@ export function useConsent() {
     return { verified: false };
   }, [consent]);
 
-  /* 4. Authorize via Token Vault */
+  /* 4. Session → subject token → connection-scoped exchange (server-only; metadata returned) */
   const authorizeWithTokenVault = useCallback(
     async (pending: PendingToolRequest, component: InventoryComponent): Promise<TokenMeta> => {
       setCurrentStage("token_vault");
@@ -215,21 +217,23 @@ export function useConsent() {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
+          connection: component.connection,
           audience: component.audience,
           scopes: pending.scopes,
         }),
       });
-      const data = (await res.json()) as { accessToken?: string; error?: string };
-      if (!res.ok || !data.accessToken) {
-        throw new Error(data.error ?? "Token Vault request failed");
+      const data = (await res.json()) as {
+        ok?: boolean;
+        meta?: TokenMeta;
+        error?: string;
+        detail?: string;
+      };
+      if (!res.ok || !data.ok || !data.meta) {
+        const msg = [data.error, data.detail].filter(Boolean).join(": ") || "connection_token_issuance_failed";
+        throw new Error(msg);
       }
 
-      // Return metadata only — never store the token in client state
-      return {
-        audience: component.audience,
-        scopes: pending.scopes,
-        issuedAt: new Date().toISOString(),
-      };
+      return data.meta;
     },
     [],
   );

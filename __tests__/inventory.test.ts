@@ -12,6 +12,7 @@ const MOCK_INVENTORY: ComponentInventoryFile = {
       risk: "LOW",
       requiredScopes: ["calendar.read"],
       audience: "https://www.googleapis.com/auth/calendar.readonly",
+      connection: "google-oauth2",
       description: "Read calendar events (low risk).",
     },
     {
@@ -21,6 +22,7 @@ const MOCK_INVENTORY: ComponentInventoryFile = {
       risk: "MEDIUM",
       requiredScopes: ["calendar.write"],
       audience: "https://www.googleapis.com/auth/calendar.events",
+      connection: "google-oauth2",
       description: "Create events (medium risk).",
     },
     {
@@ -30,6 +32,7 @@ const MOCK_INVENTORY: ComponentInventoryFile = {
       risk: "HIGH",
       requiredScopes: ["calendar.write"],
       audience: "https://www.googleapis.com/auth/calendar",
+      connection: "google-oauth2",
       description: "Destructive bulk delete (high risk).",
     },
   ],
@@ -122,6 +125,7 @@ describe("Component Inventory JSON validation", () => {
       expect(comp.requiredScopes.length).toBeGreaterThan(0);
       expect(comp.audience).toBeTruthy();
       expect(comp.audience.startsWith("https://")).toBe(true);
+      expect(comp.connection).toBeTruthy();
     }
   });
 

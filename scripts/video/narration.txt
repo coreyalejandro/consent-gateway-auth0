@@ -1,0 +1,9 @@
+AI agents are moving from chatbots to autonomous actors, but they often have too much power. Most frameworks store sensitive API keys in the prompt context, creating a massive security hole. We built ConsentChain to fix this. For this hackathon, we have extracted our core Action Gateway into a modular, standalone product that uses the Auth0 Token Vault to broker identity without ever exposing credentials to the agent.
+
+Our architecture is built on a modular Empirical Safety model. Everything is governed by a strict schema. We have implemented a seven stage pipeline. When an agent wants to act, like managing calendar data, our gateway intercepts the intent. It does not just check if the agent can do it; it asks if the human wants it done right now. We used the Auth0 AI LangChain SDK to replace local key management with a secure, brokered exchange.
+
+Let us see it in action. Here, the agent attempts a high risk calendar operation. Notice the Gateway immediately intercepts this. Stages one through three validate the risk. Now, in Stage four, the user sees a clear, transparent consent prompt after step-up verification. This is User Control in practice.
+
+Once I click approve, we hit Stage five: the Auth0 Token Vault call. We fetch a short-lived token on behalf of the user. The agent uses it to execute the task and then it is gone. The agent never knew the password, and the token never touched the LLM memory.
+
+By modularizing this gateway, we have created a plug-and-play security layer for any AI developer. Using Auth0 for AI Agents allowed us to solve the Trust Gap, moving from hope-based safety to verifiable, empirical governance. We are excited to see how this changes the way we build autonomous systems. Thanks for watching.

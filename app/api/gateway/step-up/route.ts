@@ -5,7 +5,7 @@ import { getSession, withApiAuthRequired } from "@auth0/nextjs-auth0";
  * Step-up authentication endpoint.
  *
  * For HIGH-risk actions the gateway requires the user to re-authenticate
- * before Token Vault issues a scoped access token.  This route checks
+ * before connection-scoped token issuance proceeds. This route checks
  * that the current Auth0 session was refreshed recently (within the
  * configured window) — acting as proof-of-presence.
  *

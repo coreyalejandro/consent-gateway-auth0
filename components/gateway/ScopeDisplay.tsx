@@ -60,7 +60,14 @@ export function ScopeDisplay({
 
         <div>
           <span className="text-[10px] font-medium uppercase tracking-wider text-zinc-500">
-            API Audience
+            Auth0 connection
+          </span>
+          <p className="mt-0.5 text-xs font-mono text-zinc-400 break-all">{component.connection}</p>
+        </div>
+
+        <div>
+          <span className="text-[10px] font-medium uppercase tracking-wider text-zinc-500">
+            API audience
           </span>
           <p className="mt-0.5 text-xs font-mono text-zinc-400 break-all">
             {component.audience}
@@ -83,9 +90,13 @@ export function ScopeDisplay({
       {tokenMeta && (
         <div className="mt-3 rounded-lg border border-sky-800/40 bg-sky-950/30 p-3">
           <span className="text-[10px] font-medium uppercase tracking-wider text-sky-400">
-            Token Vault — Token Issued
+            Auth0-issued token — connection-scoped access
           </span>
           <div className="mt-1.5 grid grid-cols-2 gap-2 text-xs">
+            <div>
+              <span className="text-zinc-500">Connection</span>
+              <p className="font-mono text-sky-300 text-[11px] break-all">{tokenMeta.connection}</p>
+            </div>
             <div>
               <span className="text-zinc-500">Audience</span>
               <p className="font-mono text-sky-300 text-[11px] break-all">{tokenMeta.audience}</p>

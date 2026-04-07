@@ -1,49 +1,36 @@
-# Why AI Agents Need a Consent Gateway (and How Token Vault Makes It Possible)
+# Why AI Agents Need a Consent Gateway (and How Connection-Scoped Tokens Fit)
 
-AI agents are getting good at calling tools. They can read your calendar, draft emails, create tickets, and manage files. But here's the problem nobody is solving well: **who decides what the agent is allowed to do, and how is that decision enforced?**
+AI agents are increasingly able to call tools: calendars, email, tickets, files. The hard problem is **governance**: who decides what the agent may do, and how is that decision enforced with real credentials?
 
-Most agent frameworks treat authorization as a binary: the user connects an API, and the agent gets full access. There's no distinction between reading a calendar event and deleting every event on it. There's no audit trail of what was approved. There's no step-up authentication for destructive actions. The agent just... acts.
+Many frameworks treat authorization as binary: the user connected an account, so the agent may call the API. That collapses read vs destructive operations, skips auditability, and blurs where tokens live.
 
 ## What a Consent Gateway Solves
 
-The Consent Gateway pattern inserts a governance layer between the agent's intent and the API call. Every tool invocation passes through an 8-stage pipeline: intercept, policy evaluation, risk classification, step-up authentication (for high-risk actions), user consent, token issuance, execution, and audit logging.
+The pattern inserts a pipeline between **intent** and **execution**: intercept, policy, risk, optional step-up, explicit consent, then **server-side** issuance of a short-lived, scoped credential bound to a declared **connection** and **audience**.
 
-The key insight is that **authorization should be granular and contextual**. Reading calendar events is LOW risk — auto-approve it after initial consent. Creating an event is MEDIUM — show the user what's happening. Deleting all events is HIGH — require the user to re-authenticate before the token is even issued.
+A **component inventory** makes each tool explicit: risk tier, required scopes, target audience, and Auth0 connection name. The policy engine evaluates requests before the user sees a prompt.
 
-This is where a component inventory comes in. Each tool the agent can call is declared in a JSON manifest with its risk level, required scopes, and target API audience. The policy engine evaluates every request against this inventory before the user ever sees a consent prompt.
+## Session Token vs Provider Token
 
-## How Token Vault Enables It
+Two different artifacts matter:
 
-Auth0's Token Vault is the critical piece that makes this pattern practical. Instead of the agent (or the application) managing OAuth tokens, refresh tokens, and credential storage, Token Vault handles the entire token lifecycle. The gateway simply calls `getAccessToken()` with the specific audience and scopes the user approved:
+1. **Subject token** — An Auth0-issued access token for your API (`AUTH0_SUBJECT_TOKEN_AUDIENCE`). It represents the logged-in user and is used as the `subject_token` in OAuth 2.0 token exchange (RFC 8693).
 
-```typescript
-const { accessToken } = await getAccessToken(req, res, {
-  authorizationParams: {
-    audience: "https://www.googleapis.com/auth/calendar.readonly",
-    scope: "calendar.read",
-  },
-});
-```
+2. **Provider access token** — The token returned by Auth0’s `/oauth/token` exchange for a specific **connection** (e.g. a linked Google account) and **resource audience**. That is what downstream APIs consume.
 
-The token is scoped to exactly what the user consented to — nothing more. It's short-lived, managed by Auth0, and never stored in the application's client-side state. The UI only shows metadata: which API, which scopes, when it was issued.
+Calling a session helper alone is **not** the same as proving a connection-scoped provider token. The honest integration binds **session → connection → exchange → consent → execution** and keeps provider tokens off the client.
 
-This separation is crucial. The agent framework doesn't need to know how tokens are stored or refreshed. The consent gateway doesn't need to implement a credential store. Token Vault handles the plumbing, and the gateway handles the policy.
+## Prompt Injection and Client-Side Secrets
 
-## Token Vault as Prompt Injection Defense
+If long-lived API keys or raw tokens sit in agent context, prompt-injection can exfiltrate them. A gateway that issues tokens **only on the server** after consent, and returns **metadata** to the UI, reduces what the browser and LLM ever see.
 
-There's a security angle that's easy to miss: Token Vault is also a **prompt injection defense**. When an agent holds API keys or long-lived tokens in its context, a prompt injection attack can exfiltrate those credentials — the agent is tricked into sending them to an attacker-controlled endpoint. With Token Vault, the agent never possesses credentials. The token is retrieved server-side by the gateway, used for a single scoped API call, and never exposed to the LLM context. Even if the agent is compromised by a malicious prompt, there are no credentials to steal. The attacker would need to compromise both the Auth0 session and pass the consent gateway's policy engine — a dramatically higher bar.
+## Step-Up for Destructive Actions
 
-## The Step-Up Gap in Agent Authorization
+HIGH-risk operations deserve stronger proof-of-presence. Checking OIDC `auth_time` (or equivalent) before issuance matches how sensitive real-world flows work.
 
-Here's the insight that surprised me while building this: **no major agent framework implements risk-tiered authorization**. LangChain, CrewAI, AutoGen — they all treat every tool call the same way. A read operation and a destructive bulk delete go through the same (or no) authorization flow.
+## What’s Next
 
-The consent gateway pattern introduces step-up authentication for high-risk actions. When an agent requests a destructive operation, the gateway checks the OIDC `auth_time` claim to verify session freshness. If the user hasn't authenticated recently, they're redirected to Auth0 with `prompt=login` before the token is issued. This is the same pattern banks use for wire transfers — applied to AI agent actions.
-
-## What's Next
-
-The consent gateway is a pattern, not a product. Any team building agent tooling should consider: What happens when the agent calls a destructive API? Who audits that decision? Can the user revoke access to a specific service without disconnecting everything?
-
-If you're building AI agents that act on behalf of users, start with three things: a component inventory (declare what the agent can do), a policy engine (evaluate whether it should), and Token Vault (issue scoped credentials only when authorized). The era of "connect and forget" agent authorization needs to end.
+Treat the gateway as a pattern: inventory + policy + auditable consent + **truthful** token semantics. Align docs and code so “Token Vault” or “vault” language never stands in for “we only called `getAccessToken()` once and called it a day.”
 
 ---
 

@@ -78,21 +78,26 @@ export function InventoryManifest() {
             {comp.description && (
               <p className="mt-1 text-xs text-zinc-500 pl-4">{comp.description}</p>
             )}
-            <div className="mt-2 flex items-center gap-3 pl-4">
-              <div className="flex gap-1 flex-wrap">
-                {comp.requiredScopes.map((scope) => (
-                  <span
-                    key={scope}
-                    className="rounded bg-zinc-800/80 px-1.5 py-0.5 text-[10px] font-mono text-zinc-400"
-                  >
-                    {scope}
-                  </span>
-                ))}
+            <div className="mt-2 flex flex-col gap-1 pl-4">
+              <p className="text-[10px] font-mono text-zinc-500">
+                connection: <span className="text-zinc-400">{comp.connection}</span>
+              </p>
+              <div className="flex items-center gap-3">
+                <div className="flex gap-1 flex-wrap">
+                  {comp.requiredScopes.map((scope) => (
+                    <span
+                      key={scope}
+                      className="rounded bg-zinc-800/80 px-1.5 py-0.5 text-[10px] font-mono text-zinc-400"
+                    >
+                      {scope}
+                    </span>
+                  ))}
+                </div>
+                <span className="text-[10px] text-zinc-700">→</span>
+                <span className="text-[10px] font-mono text-zinc-600 truncate">
+                  {comp.audience}
+                </span>
               </div>
-              <span className="text-[10px] text-zinc-700">→</span>
-              <span className="text-[10px] font-mono text-zinc-600 truncate">
-                {comp.audience}
-              </span>
             </div>
           </div>
         ))}

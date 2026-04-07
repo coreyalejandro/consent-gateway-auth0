@@ -100,7 +100,7 @@ export function GatewayDemo() {
               className="rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-emerald-500 transition-colors"
               onClick={() => void approve()}
             >
-              Approve — Issue Token via Vault
+              Approve — Issue connection-scoped token
             </button>
             <button
               type="button"

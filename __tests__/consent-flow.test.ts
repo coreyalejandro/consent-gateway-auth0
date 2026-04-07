@@ -52,6 +52,7 @@ describe("Consent Flow Types", () => {
           risk: "LOW",
           requiredScopes: ["calendar.read"],
           audience: "https://www.googleapis.com/auth/calendar.readonly",
+          connection: "google-oauth2",
         },
       };
       expect(state.status).toBe("awaiting_user");
@@ -77,6 +78,7 @@ describe("Consent Flow Types", () => {
           risk: "HIGH",
           requiredScopes: ["calendar.write"],
           audience: "https://www.googleapis.com/auth/calendar",
+          connection: "google-oauth2",
         },
       };
       expect(state.status).toBe("step_up_required");
@@ -94,9 +96,9 @@ describe("Consent Flow Types", () => {
     });
 
     it("error state carries message", () => {
-      const state: ConsentState = { status: "error", message: "Token Vault request failed" };
+      const state: ConsentState = { status: "error", message: "connection_token_issuance_failed" };
       if (state.status === "error") {
-        expect(state.message).toBe("Token Vault request failed");
+        expect(state.message).toBe("connection_token_issuance_failed");
       }
     });
 
@@ -116,8 +118,10 @@ describe("Consent Flow Types", () => {
           risk: "LOW",
           requiredScopes: ["calendar.read"],
           audience: "https://www.googleapis.com/auth/calendar.readonly",
+          connection: "google-oauth2",
         },
         tokenMeta: {
+          connection: "google-oauth2",
           audience: "https://www.googleapis.com/auth/calendar.readonly",
           scopes: ["calendar.read"],
           issuedAt: new Date().toISOString(),
